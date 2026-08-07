@@ -177,7 +177,7 @@ def main() -> int:
 
     skill_md = find_skill_md(Path(sys.argv[1]))
     skill_dir = skill_md.parent
-    text = skill_md.read_text(encoding="utf-8")
+    text = skill_md.read_text(encoding="utf-8", errors="replace")
     fields, body, fm_errors = split_frontmatter(text)
 
     issues: list[str] = [f"FAIL frontmatter: {e}" for e in fm_errors]

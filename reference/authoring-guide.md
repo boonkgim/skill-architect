@@ -33,6 +33,8 @@ A skill is read in layers, and each layer has a different cost:
 The design consequence: **push everything that isn't needed on every invocation down a layer.**
 SKILL.md is a table of contents with just enough body to handle the common case; anything
 domain-specific, rarely needed, or purely reference material moves to a file SKILL.md links to.
+The same rule governs prompts a skill writes at runtime, not just files it ships — see *the best
+dispatch is "your turn."* in *Subagents and context management*.
 
 Three shapes, pick by how the skill branches:
 
@@ -115,12 +117,43 @@ phase pull in context this conversation doesn't need to keep.** Three shapes:
 - **Rule-shaped** (must always happen, no judgment involved) → a script or a hook, not a subagent.
 - **Knowledge-shaped** (Claude needs to know something to do the task) → the skill itself, or a
   reference file it loads.
-- **Delegation-shaped** (heavy, disposable work whose *artifact* matters but whose *process*
-  doesn't need to stay visible) → a subagent.
+- **Delegation-shaped** (work that *reads* or *writes* a lot of material — the artifact matters,
+  the process doesn't need to stay visible) → a subagent. **Producing a file is delegation-shaped
+  by definition**, draft or final, not only the wide reads that precede it.
 
-Research, wide file reads before a refactor, a first draft that's going to be critiqued anyway,
-fetching several external sources — all delegation-shaped. A single trivial lookup or a 20-line
-edit is not; spinning up a subagent for it is overhead that protects nothing (checklist item N5).
+Research, wide file reads before a refactor, fetching several external sources, and every phase
+that emits an artifact — all delegation-shaped. A single trivial lookup or a 20-line edit is not;
+spinning up a subagent for it is overhead that protects nothing (checklist item N5).
+
+**Keep the orchestrator thin.** It holds the big picture and spends its context on decisions, not
+on material. What comes back from a subagent is a summary, a path, or a routing list — never
+content (mechanics in *File-based handoff* below).
+
+The failure this prevents isn't reading too much. It's a skill whose main flow drafts the artifact
+inline and then spawns a subagent to *review* it — that delegates the cheap half and keeps the
+expensive one. The draft is now in the orchestrator's context, so every later round of fixes is
+paid at full price. **Delegate the producing, not just the checking.** The generator is a subagent
+too, and the orchestrating turn should be left holding a path and a line count.
+
+**A subagent's prompt states what it returns, and bounds it.** Name the shape and cap the size —
+"the path plus a one-line summary", "counts plus failing item ids plus the files they name", "at
+most 12 lines". A subagent left to decide what to report will paste its work back.
+
+**A dispatch names three things: where to get the input, what to do, and where to put the output.**
+Nothing else needs to travel. Inputs and outputs are paths, never inlined content (mechanics and
+the file-naming convention in *File-based handoff*), and the "what to do" can be as small as naming
+the skill the subagent should run, when that skill already encodes its own inputs and outputs. What
+comes back is a summary plus the location of what was produced.
+
+**The orchestrator holds a manifest, not material.** Its running state across phases is a list of
+what exists and where — one line and a path each. That manifest is what makes the next dispatch
+writable without reopening anything, and it is the only state that has to survive between phases.
+
+**The best dispatch is "your turn."** The more a subagent's own skill or reference file encodes
+where its input lives and where its output goes, the less the orchestrator has to say. A dispatch
+that has grown long with instructions about inputs and outputs is the same defect as a bloated
+SKILL.md — knowledge sitting a layer above the place that needs it — and it takes the same fix, for
+the same reason: push it down into a file the subagent loads itself (*Progressive disclosure*).
 
 **Two independent levers, and they compose:**
 
@@ -136,9 +169,18 @@ edit is not; spinning up a subagent for it is overhead that protects nothing (ch
    *do*, and it returns without meaningful output.
 2. **Individual phases inside the skill fan out.** The skill's own instructions launch subagents
    for specific heavy phases (via the `Agent` tool) while the orchestrating turn stays cheap. This
-   is the shape to reach for when a skill has 2+ phases that each read substantial material, or
-   independent work that can run in parallel — the orchestrator dispatches, each subagent does its
-   phase against its own context, and only compact results come back.
+   is the shape to reach for when a skill has 2+ phases that each read or write substantial
+   material, or independent work that can run in parallel — the orchestrator dispatches, each
+   subagent does its phase against its own context, and only compact results come back.
+
+   **Which phases delegate is decided by volume, not by importance.** A phase can be creative,
+   judgment-heavy and central to the skill and still be delegation-shaped — the creative ones
+   usually are, precisely because their output is long. The line: a phase that writes a file, or
+   reads more than a screenful, delegates; a phase whose whole cost is a lookup, a small edit, or a
+   decision made from results already in hand stays inline. That line is also where N5 applies — a
+   subagent below it protects no context and is pure overhead, and a phase above it that stays
+   inline poisons the orchestrator for the rest of the run. Judge the volume, and only the volume,
+   to know which rule you're under.
 
 Use lever 1 when the *entire* skill is disposable-context work end to end. Use lever 2 when the
 skill has a mix — some orchestration logic that should stay visible, plus one or more heavy phases
@@ -167,7 +209,9 @@ decision to delegate at all.
   ambiguity here is where handoffs silently fail.
 - **The full artifact is read exactly once more than necessary: never.** If the orchestrator only
   needs to know pass/fail and a short reason, that's what the subagent returns — it doesn't dump
-  the artifact into its response just because it has it.
+  the artifact into its response just because it has it. Enforce this at launch, not at read time:
+  the prompt names the return shape and its cap (see the return contract above), because a subagent
+  that wasn't told what to return decides for itself, and it decides "all of it".
 
 ## Reflection loops
 
