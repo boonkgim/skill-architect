@@ -3,7 +3,7 @@
 
 Checks frontmatter validity, body length, reference-file link depth and table of
 contents, script constant hygiene, and path style. This does not judge whether the
-skill is well-designed — that's what the checklist-driven reflection loop is for.
+skill is well-designed — use a proportionate checklist and representative check.
 See ../reference/checklist.md for the items this script can't check mechanically.
 
 Usage:
