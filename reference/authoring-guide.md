@@ -66,9 +66,12 @@ scripts can be reused rather than duplicated.
 
 ## Specificity and defaults
 
-Define the outcome, consequential requirements and preferences, and an observable
-completion standard before prescribing a method. Specify output structure only
-when it affects use or compatibility; a resulting state can be the outcome.
+Use Outcome and goal, optional Instructions, and Definition of Done as the basic
+body structure. Keep constraints and preferences with the outcome, and methods
+under Instructions. Adapt existing headings for targeted changes rather than
+forcing a full restructure. Define acceptance criteria before prescribing a method.
+Specify output structure only when it affects use or compatibility; a resulting
+state can be the outcome.
 Separate mandatory requirements from adaptable preferences. Avoid background
 explanations an agent already knows.
 
@@ -87,6 +90,15 @@ looks like. State what evidence establishes success; avoid vague gates such as
 Begin with a single agent executing and checking the skill. Add only the pattern
 that addresses a concrete problem; do not automatically combine these patterns.
 
+**Route:** choose the specialised subagent whose responsibility fits the request.
+Use clear selection criteria and a fallback for ambiguous cases. Do not run every
+specialist when only one applies.
+
+**Chaining:** delegate dependent stages when intermediate results feed the next
+stage and staged context is useful. Each stage writes its output before the next
+reads it. Keep only coordination state in the parent, especially when the whole
+task would exceed one context window.
+
 **Generate → verify → fix:** when accuracy is insufficient and independent
 judgment can catch the observed errors, use separate subagents for the generator,
 verifier, and fixer. Run one pass of each. Give the verifier the artifact and
@@ -102,13 +114,25 @@ the cap is reached, or a finding persists without progress. Report unresolved
 issues instead of hiding them or looping indefinitely. A verifier must be able to
 return a clean pass; preferences and hypothetical enhancements are not defects.
 
-**Thin orchestrator + workers:** only when a large skill's context load or distinct
-responsibilities impair execution, separate coordination from the affected work.
+**Fan-out, parallel:** split independent high-volume work into homogeneous units
+and run them concurrently when capacity permits. Assign disjoint output ownership,
+then combine results and check for missing or duplicate units. Do not parallelize
+steps that depend on unfinished results.
+
+**Fan-out, vote/rank:** have subagents solve the same task independently using
+different approaches, then compare their outputs against explicit acceptance and
+ranking criteria. Preserve alternatives in separate files. Agreement is a signal,
+not proof; verify factual or mechanical claims against evidence or scripts.
+
+**Thin orchestrator + specialised workers:** only when a large skill's context
+load or distinct responsibilities impair execution, separate coordination from
+the affected work.
 The orchestrator holds decisions and routes work; workers read, produce, verify,
 or repair the material they own. Give workers coherent tasks, not a mandatory
 one-worker-per-file fan-out. Cross-file changes should have one clear owner.
-Avoid rereading large artifacts merely to relay them, but do not prohibit a useful
-read that the coordinating decision actually needs.
+The main agent delegates and coordinates rather than performing the workers'
+substantive work. Avoid rereading large artifacts merely to relay them; read only
+what a coordinating decision actually needs.
 
 Independent verification can be useful without a thin orchestrator; workers can
 be useful without reflection. During improvement, simplify or remove patterns

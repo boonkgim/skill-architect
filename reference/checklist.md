@@ -10,6 +10,7 @@ references, subagents, reflection, a manifest, or an orchestrator.
 | Check | Pass condition |
 |---|---|
 | Purpose and discovery | Name is plain and valid; description states behavior and concrete triggers in third person. Applicability is not repeated in the body. |
+| Body structure | Outcome and goal, optional Instructions, and Definition of Done are clear; equivalent existing headings are acceptable for targeted improvements. |
 | Outcome and requirements | The useful result and completion boundary are clear. Consequential constraints and bespoke preferences are explicit; output specifications exist only where needed. |
 | Completion standard | Observable acceptance criteria and evidence establish success; a separate review workflow is not required. |
 | Minimality | Each instruction, file, script, and stage solves a current problem or requirement. No speculative machinery. |
@@ -27,6 +28,10 @@ references, subagents, reflection, a manifest, or an orchestrator.
 
 | Pattern | Pass condition |
 |---|---|
+| Routing | Selection criteria choose the appropriate specialist without running unrelated workers. |
+| Chaining | Dependent stages consume completed file outputs, with staged context justified by the task. |
+| Parallel fan-out | Independent units have disjoint ownership; combined results are checked for omissions and duplication. |
+| Vote/rank fan-out | Independent alternatives use different approaches and explicit ranking criteria; agreement is not treated as proof of correctness. |
 | Independent stages | A concrete accuracy problem warrants generate → verify → fix. Each stage has a separate subagent, one pass each by default. |
 | Verification | The verifier checks artifacts against requirements independently, cites actionable locations and evidence, and can return PASS without inventing defects. |
 | Fixing | The fixer makes necessary repairs without unrelated redesign; applicable deterministic checks confirm the changes. |
